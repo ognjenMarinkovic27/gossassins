@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/supabase-community/supabase-go"
 )
@@ -15,7 +16,7 @@ type AuthSupabaseClient struct {
 }
 
 func (c *AuthSupabaseClient) AuthWithMagicLink(email string, createUser bool) error {
-	url := fmt.Sprintf("%s/auth/v1/otp", API_URL)
+	url := fmt.Sprintf("%s/auth/v1/otp", os.Getenv("API_URL"))
 
 	// Create the JSON payload for the request
 	payload := map[string]interface{}{
@@ -36,8 +37,8 @@ func (c *AuthSupabaseClient) AuthWithMagicLink(email string, createUser bool) er
 	}
 
 	// Set the Authorization header
-	req.Header.Set("Authorization", "Bearer "+API_KEY)
-	req.Header.Set("apikey", API_KEY)
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("API_KEY"))
+	req.Header.Set("apikey", os.Getenv("API_KEY"))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
@@ -50,7 +51,7 @@ func (c *AuthSupabaseClient) AuthWithMagicLink(email string, createUser bool) er
 
 	// Check the response
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Failed to send magic link, status: " + resp.Status)
+		return errors.New("Failed to send magic link, Status: " + resp.Status)
 	}
 
 	fmt.Println("Magic link sent successfully!")
