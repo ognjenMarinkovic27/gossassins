@@ -71,6 +71,8 @@ func (h *GameHandler) Patch(context *gin.Context) {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
+	nullifyUnpatchable(&patch)
+
 	err := h.gameRepo.Patch(id, &patch)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
@@ -78,6 +80,11 @@ func (h *GameHandler) Patch(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, "")
+}
+
+func nullifyUnpatchable(patch *models.Game) {
+	patch.CreatedBy = ""
+	patch.State = ""
 }
 
 func (h *GameHandler) Delete(context *gin.Context) {
