@@ -76,12 +76,15 @@ func (h *GameHandler) Patch(context *gin.Context) {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	if request.Name != nil {
-		err := h.patchGame(request, id)
-		if err != nil {
-			context.AbortWithError(err.Status(), err)
-			return
-		}
+	if request.Name == nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing name"})
+		return
+	}
+
+	err := h.patchGame(request, id)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
 	}
 
 	context.JSON(http.StatusOK, "")
