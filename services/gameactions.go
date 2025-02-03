@@ -57,6 +57,7 @@ func (s *GameActionsService) setGameStatusToRunning(err apierrors.StatusError, g
 }
 
 func (s *GameActionsService) assignTargets(game *models.Game) apierrors.StatusError {
+	/* Stored procedures are the only option for these kinds of transactions */
 	errMsg := s.client.Rpc("assign_kill_codes_and_targets", "", gin.H{"p_game_id": game.Id})
 	if errMsg != "" {
 		return apierrors.NewStatusError(
