@@ -1,0 +1,1 @@
+Note: These are just copies of the actual sql functions in supabase
