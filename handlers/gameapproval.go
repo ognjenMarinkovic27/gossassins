@@ -10,7 +10,7 @@ import (
 )
 
 type GameApprovalHandler struct {
-	GameApprovalRepo GameApprovalRepo
+	gameApprovalRepo GameApprovalRepo
 }
 
 func NewGameApprovalHandler(repo GameApprovalRepo) *GameApprovalHandler {
@@ -25,7 +25,7 @@ type GameApprovalRepo interface {
 
 func (h *GameApprovalHandler) GetAllByGameId(context *gin.Context) {
 	gameId, _ := strconv.Atoi(context.Param("game_id"))
-	approvals, err := h.GameApprovalRepo.GetAllByGameId(gameId)
+	approvals, err := h.gameApprovalRepo.GetAllByGameId(gameId)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return
@@ -44,7 +44,7 @@ func (h *GameApprovalHandler) Create(context *gin.Context) {
 	approval.GameId = &gameId
 	approval.Status = "NOT_APPROVED"
 
-	err := h.GameApprovalRepo.Create(&approval)
+	err := h.gameApprovalRepo.Create(&approval)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return
@@ -61,7 +61,7 @@ func (h *GameApprovalHandler) Patch(context *gin.Context) {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err := h.GameApprovalRepo.Patch(gameId, userId, &patch)
+	err := h.gameApprovalRepo.Patch(gameId, userId, &patch)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return
