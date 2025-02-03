@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"mognjen/gossassins/apierrors"
+	"mognjen/gossassins/dto"
 	"mognjen/gossassins/models"
 	"net/http"
 	"strconv"
@@ -33,13 +34,25 @@ func (h *GamePlayerHandler) GetAllByGameId(context *gin.Context) {
 }
 
 func (h *GamePlayerHandler) Create(context *gin.Context) {
-	var player models.GamePlayer
-	if err := context.BindJSON(&player); err != nil {
+	var request dto.CreateGamePlayerRequest
+	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
 	gameId, _ := strconv.Atoi(context.Param("game_id"))
-	player.GameId = &gameId
+
+	if request.UserId == nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing user_id"})
+		return
+	}
+
+	player := models.GamePlayer{
+		GameId:   gameId,
+		UserId:   *request.UserId,
+		KillCode: nil,
+		TargetId: nil,
+		Status:   models.ALIVE,
+	}
 
 	err := h.gamePlayerRepo.Create(&player)
 	if err != nil {
