@@ -13,6 +13,7 @@ func main() {
 	client, err := supabase.NewClient(os.Getenv("API_URL"), os.Getenv("API_KEY"), &supabase.ClientOptions{})
 	if err != nil {
 		fmt.Println("cannot initalize client", err)
+		return
 	}
 
 	registerRoutes(r, client)
