@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"mognjen/gossassins/apierrors"
+	"mognjen/gossassins/dto"
 	"mognjen/gossassins/models"
 	"net/http"
 	"strconv"
@@ -35,14 +37,23 @@ func (h *GameApprovalHandler) GetAllByGameId(context *gin.Context) {
 }
 
 func (h *GameApprovalHandler) Create(context *gin.Context) {
-	var approval models.GameApproval
-	if err := context.BindJSON(&approval); err != nil {
+	var request dto.CreateGameApprovalRequest
+	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
+	if request.UserId == nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing user_id"})
+		return
+	}
+
 	gameId, _ := strconv.Atoi(context.Param("game_id"))
-	approval.GameId = &gameId
-	approval.Status = "NOT_APPROVED"
+
+	approval := models.GameApproval{
+		GameId: gameId,
+		UserId: *request.UserId,
+		Status: models.NotApproved,
+	}
 
 	err := h.gameApprovalRepo.Create(&approval)
 	if err != nil {
@@ -56,16 +67,38 @@ func (h *GameApprovalHandler) Create(context *gin.Context) {
 func (h *GameApprovalHandler) Patch(context *gin.Context) {
 	gameId, _ := strconv.Atoi(context.Param("game_id"))
 	userId := context.Param("user_id")
-	var patch models.GameApproval
-	if err := context.BindJSON(&patch); err != nil {
+	var request dto.PatchGameApprovalRequest
+	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	err := h.gameApprovalRepo.Patch(gameId, userId, &patch)
+	err := validateRequest(request)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	patch := models.GameApproval{
+		GameId: gameId,
+		UserId: userId,
+		Status: models.ApprovalStatus(*request.Status),
+	}
+
+	err = h.gameApprovalRepo.Patch(gameId, userId, &patch)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return
 	}
 
 	context.JSON(http.StatusOK, "")
+}
+
+func validateRequest(patch dto.PatchGameApprovalRequest) apierrors.StatusError {
+	if patch.Status == nil {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("missing status"))
+	} else if !models.IsValidApprovalStatus(*patch.Status) {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("invalid status value, status can be APPROVED, NOT_APPROVED"))
+	}
+
+	return nil
 }
