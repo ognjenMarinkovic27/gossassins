@@ -9,15 +9,15 @@ import (
 	"github.com/supabase-community/supabase-go"
 )
 
-type ApprovalsRepo struct {
+type GameApprovalRepo struct {
 	db *supabase.Client
 }
 
-func NewGameApprovalRepo(db *supabase.Client) *ApprovalsRepo {
-	return &ApprovalsRepo{db}
+func NewGameApprovalRepo(db *supabase.Client) *GameApprovalRepo {
+	return &GameApprovalRepo{db}
 }
 
-func (r *ApprovalsRepo) GetAllByGameId(gameId int) ([]models.GameApproval, apierrors.StatusError) {
+func (r *GameApprovalRepo) GetAllByGameId(gameId int) ([]models.GameApproval, apierrors.StatusError) {
 	var approvals []models.GameApproval
 	query := r.db.
 		From("game_approvals").
@@ -32,7 +32,7 @@ func (r *ApprovalsRepo) GetAllByGameId(gameId int) ([]models.GameApproval, apier
 	return approvals, nil
 }
 
-func (r *ApprovalsRepo) Create(game *models.GameApproval) apierrors.StatusError {
+func (r *GameApprovalRepo) Create(game *models.GameApproval) apierrors.StatusError {
 	_, _, err := r.db.
 		From("game_approvals").
 		Insert(game, false, "", "", "").
@@ -45,7 +45,7 @@ func (r *ApprovalsRepo) Create(game *models.GameApproval) apierrors.StatusError 
 	return nil
 }
 
-func (r *ApprovalsRepo) Patch(gameId int, userId string, patch *models.GameApproval) apierrors.StatusError {
+func (r *GameApprovalRepo) Patch(gameId int, userId string, patch *models.GameApproval) apierrors.StatusError {
 	_, _, err := r.db.
 		From("game_approvals").
 		Update(patch, "", "").
