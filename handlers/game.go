@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"mognjen/gossassins/apierrors"
+	"mognjen/gossassins/dto"
 	"mognjen/gossassins/models"
 	"net/http"
 	"strconv"
@@ -48,12 +49,16 @@ func (h *GameHandler) GetById(context *gin.Context) {
 }
 
 func (h *GameHandler) Create(context *gin.Context) {
-	var game models.Game
-	if err := context.BindJSON(&game); err != nil {
+	var request dto.CreateGameRequest
+	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	game.State = "OPEN"
+	game := models.Game{
+		Name:      request.Name,
+		CreatedBy: request.CreatedBy,
+		State:     models.OPEN,
+	}
 
 	err := h.gameRepo.Create(&game)
 	if err != nil {
@@ -66,25 +71,32 @@ func (h *GameHandler) Create(context *gin.Context) {
 
 func (h *GameHandler) Patch(context *gin.Context) {
 	id, _ := strconv.Atoi(context.Param("id"))
-	var patch models.Game
-	if err := context.BindJSON(&patch); err != nil {
+	var request dto.PatchGameRequest
+	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	nullifyUnpatchable(&patch)
-
-	err := h.gameRepo.Patch(id, &patch)
-	if err != nil {
-		context.AbortWithError(err.Status(), err)
-		return
+	if request.Name != nil {
+		err := h.patchGame(request, id)
+		if err != nil {
+			context.AbortWithError(err.Status(), err)
+			return
+		}
 	}
 
 	context.JSON(http.StatusOK, "")
 }
 
-func nullifyUnpatchable(patch *models.Game) {
-	patch.CreatedBy = ""
-	patch.State = ""
+func (h *GameHandler) patchGame(request dto.PatchGameRequest, id int) apierrors.StatusError {
+	patch := models.Game{
+		Name: *request.Name,
+	}
+
+	err := h.gameRepo.Patch(id, &patch)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h *GameHandler) Delete(context *gin.Context) {
