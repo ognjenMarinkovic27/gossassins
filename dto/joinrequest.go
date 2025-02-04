@@ -1,9 +1,9 @@
 package dto
 
-type CreateGameApprovalRequest struct {
+type CreateJoinRequestRequest struct {
 	UserId *string `json:"user_id,omitempty"`
 }
 
-type PatchGameApprovalRequest struct {
+type PatchJoinRequestRequest struct {
 	Status *string `json:"status,omitempty"`
 }

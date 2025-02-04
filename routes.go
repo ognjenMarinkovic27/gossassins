@@ -41,19 +41,21 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 		gameGroup.PATCH("/:id", gameHandler.Patch)
 		gameGroup.DELETE("/:id", gameHandler.Delete)
 
-		registerGameApprovalRoutes(gameGroup, client)
+		registerJoinRequestRoutes(gameGroup, gameRepo, client)
 		registerGameActionRoutes(gameGroup, gameRepo, client)
 	}
 }
 
-func registerGameApprovalRoutes(gameGroup *gin.RouterGroup, client *supabase.Client) {
-	approvalRepo := repos.NewGameApprovalRepo(client)
-	approvalHandler := handlers.NewGameApprovalHandler(approvalRepo)
-	approvalGroup := gameGroup.Group("/approvals/:game_id")
+func registerJoinRequestRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRepo, client *supabase.Client) {
+	joinRequestRepo := repos.NewJoinRequestRepo(client)
+	joinRequestService := services.NewJoinRequestService(gameRepo, joinRequestRepo, client)
+	joinRequestHandler := handlers.NewJoinRequestHandler(joinRequestService)
+	joinRequestGroup := gameGroup.Group("/join-requests/:game_id")
 	{
-		approvalGroup.GET("/", approvalHandler.GetAllByGameId)
-		approvalGroup.POST("/", approvalHandler.Create)
-		approvalGroup.PATCH("/:user_id", approvalHandler.Patch)
+		joinRequestGroup.GET("/", joinRequestHandler.GetAllByGameId)
+		joinRequestGroup.POST("/", joinRequestHandler.Create)
+		joinRequestGroup.POST("/:user_id/approval", joinRequestHandler.Approve)
+		joinRequestGroup.DELETE("/:user_id/approval", joinRequestHandler.Unapprove)
 	}
 }
 
@@ -63,15 +65,6 @@ func registerGameActionRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRe
 	actionGroup := gameGroup.Group("/actions")
 	{
 		actionGroup.POST("/start", actionHandler.Start)
-
-		/*
-		   TODO: this could be a REST style approval resource
-		   and current approvals could be renamed to approval
-		   requests
-		*/
-		actionGroup.POST("/approve", actionHandler.Approve)
-		actionGroup.POST("/unapprove", actionHandler.Unapprove)
-
 		actionGroup.POST("/kill", actionHandler.Kill)
 	}
 }

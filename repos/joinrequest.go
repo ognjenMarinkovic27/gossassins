@@ -9,32 +9,32 @@ import (
 	"github.com/supabase-community/supabase-go"
 )
 
-type GameApprovalRepo struct {
+type JoinRequestRepo struct {
 	db *supabase.Client
 }
 
-func NewGameApprovalRepo(db *supabase.Client) *GameApprovalRepo {
-	return &GameApprovalRepo{db}
+func NewJoinRequestRepo(db *supabase.Client) *JoinRequestRepo {
+	return &JoinRequestRepo{db}
 }
 
-func (r *GameApprovalRepo) GetAllByGameId(gameId int) ([]models.GameApproval, apierrors.StatusError) {
-	var approvals []models.GameApproval
+func (r *JoinRequestRepo) GetAllByGameId(gameId int) ([]models.JoinRequest, apierrors.StatusError) {
+	var joinRequests []models.JoinRequest
 	query := r.db.
-		From("game_approvals").
+		From("join_requests").
 		Select("*", "exact", false).
 		Eq("game_id", strconv.Itoa(gameId))
 
-	_, err := execeuteSelect(query, &approvals)
+	_, err := execeuteSelect(query, &joinRequests)
 	if err != nil {
 		return nil, apierrors.NewStatusError(http.StatusInternalServerError, err)
 	}
 
-	return approvals, nil
+	return joinRequests, nil
 }
 
-func (r *GameApprovalRepo) Create(game *models.GameApproval) apierrors.StatusError {
+func (r *JoinRequestRepo) Create(game *models.JoinRequest) apierrors.StatusError {
 	_, _, err := r.db.
-		From("game_approvals").
+		From("join_requests").
 		Insert(game, false, "", "", "").
 		Execute()
 
@@ -45,9 +45,9 @@ func (r *GameApprovalRepo) Create(game *models.GameApproval) apierrors.StatusErr
 	return nil
 }
 
-func (r *GameApprovalRepo) Patch(gameId int, userId string, patch *models.GameApproval) apierrors.StatusError {
+func (r *JoinRequestRepo) Patch(gameId int, userId string, patch *models.JoinRequest) apierrors.StatusError {
 	_, _, err := r.db.
-		From("game_approvals").
+		From("join_requests").
 		Update(patch, "", "").
 		Eq("game_id", strconv.Itoa(gameId)).
 		Eq("user_id", userId).

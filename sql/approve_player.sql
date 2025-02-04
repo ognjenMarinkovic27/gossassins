@@ -1,8 +1,8 @@
 create or replace function approve_player(p_game_id bigint, p_user_id uuid)
 returns void as $$
 begin
-    -- Update approval status in game_approvals to APPROVED
-    update game_approvals
+    -- Update approval status in join_requests to APPROVED
+    update join_requests
     set status = 'APPROVED'
     where game_id = p_game_id and user_id = p_user_id;
     
