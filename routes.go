@@ -69,10 +69,10 @@ func registerGameActionRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRe
 	}
 }
 
-func registerGamePlayerRoutes(r *gin.Engine, client *supabase.Client) {
+func registerGamePlayerRoutes(gameGroup *gin.RouterGroup, client *supabase.Client) {
 	playerRepo := repos.NewGamePlayerRepo(client)
 	playerHandler := handlers.NewGamePlayerHandler(client, playerRepo)
-	playerGroup := r.Group("/game-players/:game_id")
+	playerGroup := gameGroup.Group("/players/:game_id")
 	{
 		playerGroup.GET("/", playerHandler.GetAllByGameId)
 		playerGroup.GET("/:user_id", playerHandler.GetByGameIdUserId)
