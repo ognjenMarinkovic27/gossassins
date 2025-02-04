@@ -43,6 +43,7 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 
 		registerJoinRequestRoutes(gameGroup, gameRepo, client)
 		registerGameActionRoutes(gameGroup, gameRepo, client)
+		registerGamePlayerRoutes(gameGroup, client)
 	}
 }
 
