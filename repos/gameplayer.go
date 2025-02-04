@@ -38,7 +38,7 @@ func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId string) (*models.G
 		From("game_players").
 		Select("*", "exact", false).
 		Eq("game_id", strconv.Itoa(gameId)).
-		Eq("user_id", strconv.Itoa(gameId))
+		Eq("user_id", userId)
 
 	_, err := execeuteSelect(query, &players)
 	if err != nil {
