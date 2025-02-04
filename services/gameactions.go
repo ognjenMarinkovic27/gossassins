@@ -22,12 +22,9 @@ func (s *GameActionsService) Start(callerUserId string, gameId int) apierrors.St
 		return err
 	}
 
-	if game.CreatedBy != callerUserId {
-		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Can't start a game you didn't create"))
-	}
-
-	if game.State == "STARTED" {
-		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Game already started"))
+	err = s.validateGameState(game, callerUserId, models.RUNNING)
+	if err != nil {
+		return err
 	}
 
 	err = s.assignTargets(game)
@@ -69,5 +66,39 @@ func (s *GameActionsService) assignTargets(game *models.Game) apierrors.StatusEr
 			errors.New(errMsg),
 		)
 	}
+	return nil
+}
+
+func (s *GameActionsService) ApprovePlayer(gameId int, userId string, callerUserId string) apierrors.StatusError {
+	game, err := s.gameRepo.GetById(gameId)
+	if err != nil {
+		return err
+	}
+
+	err = s.validateGameState(game, callerUserId, models.OPEN)
+	if err != nil {
+		return err
+	}
+
+	/* Stored procedures are the only option for these kinds of transactions */
+	errMsg := s.client.Rpc("approve_player", "", gin.H{"p_game_id": gameId, "p_user_id": userId})
+	if errMsg != "" {
+		return apierrors.NewStatusError(
+			http.StatusInternalServerError,
+			errors.New(errMsg),
+		)
+	}
+	return nil
+}
+
+func (s *GameActionsService) validateGameState(game *models.Game, callerUserId string, state models.GameState) apierrors.StatusError {
+	if game.CreatedBy != callerUserId {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Can't start a game you didn't create"))
+	}
+
+	if game.State != state {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Game already started"))
+	}
+
 	return nil
 }
