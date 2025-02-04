@@ -50,3 +50,13 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 		}
 	}
 }
+
+func registerGamePlayerRoutes(r *gin.Engine, client *supabase.Client) {
+	playerRepo := repos.NewGamePlayerRepo(client)
+	playerHandler := handlers.NewGamePlayerHandler(client, playerRepo)
+	playerGroup := r.Group("/game-player/:game_id")
+	{
+		playerGroup.GET("/", playerHandler.GetAllByGameId)
+		playerGroup.DELETE("/:player_id", playerHandler.Delete)
+	}
+}

@@ -13,8 +13,8 @@ type GamePlayerRepo struct {
 	db *supabase.Client
 }
 
-func NewGamePlayerRepo(db *supabase.Client) *GameApprovalRepo {
-	return &GameApprovalRepo{db}
+func NewGamePlayerRepo(db *supabase.Client) *GamePlayerRepo {
+	return &GamePlayerRepo{db}
 }
 
 func (r *GamePlayerRepo) GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError) {

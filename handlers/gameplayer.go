@@ -16,6 +16,10 @@ type GamePlayerHandler struct {
 	gamePlayerRepo GamePlayerRepo
 }
 
+func NewGamePlayerHandler(db *supabase.Client, repo GamePlayerRepo) *GamePlayerHandler {
+	return &GamePlayerHandler{db, repo}
+}
+
 type GamePlayerRepo interface {
 	GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError)
 	Create(player *models.GamePlayer) apierrors.StatusError
