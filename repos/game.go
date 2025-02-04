@@ -34,13 +34,13 @@ func (r *GameRepo) GetAll(ctx context.Context) ([]models.Game, apierrors.StatusE
 }
 
 func (r *GameRepo) GetById(id int) (*models.Game, apierrors.StatusError) {
-	var game models.Game
+	var games []models.Game
 	query := r.db.
 		From("games").
 		Select("*", "exact", false).
 		Eq("id", strconv.Itoa(id))
 
-	count, err := execeuteSelect(query, &game)
+	count, err := execeuteSelect(query, &games)
 	if err != nil {
 		return nil, apierrors.NewStatusError(http.StatusInternalServerError, err)
 	}
@@ -49,7 +49,7 @@ func (r *GameRepo) GetById(id int) (*models.Game, apierrors.StatusError) {
 		return nil, apierrors.NewStatusError(http.StatusNotFound, errors.New("Game not found"))
 	}
 
-	return &game, nil
+	return &games[0], nil
 }
 
 func (r *GameRepo) Create(game *models.Game) apierrors.StatusError {
