@@ -16,16 +16,8 @@ type GameActionsService struct {
 	client   *supabase.Client
 }
 
-func (s *GameActionsService) Start(callerUserId string, gameId int) apierrors.StatusError {
-	game, err := s.gameRepo.GetById(gameId)
-	if err != nil {
-		return err
-	}
-
-	err = s.validateGameState(game, callerUserId, models.RUNNING)
-	if err != nil {
-		return err
-	}
+func (s *GameActionsService) Start(gameId int, callerUserId string) apierrors.StatusError {
+	game, err := s.getValidatedGame(gameId, callerUserId, models.OPEN)
 
 	err = s.assignTargets(game)
 	if err != nil {
@@ -70,12 +62,7 @@ func (s *GameActionsService) assignTargets(game *models.Game) apierrors.StatusEr
 }
 
 func (s *GameActionsService) ApprovePlayer(gameId int, userId string, callerUserId string) apierrors.StatusError {
-	game, err := s.gameRepo.GetById(gameId)
-	if err != nil {
-		return err
-	}
-
-	err = s.validateGameState(game, callerUserId, models.OPEN)
+	err := s.validateGame(gameId, callerUserId, models.OPEN)
 	if err != nil {
 		return err
 	}
@@ -91,11 +78,67 @@ func (s *GameActionsService) ApprovePlayer(gameId int, userId string, callerUser
 	return nil
 }
 
-func (s *GameActionsService) validateGameState(game *models.Game, callerUserId string, state models.GameState) apierrors.StatusError {
-	if game.CreatedBy != callerUserId {
-		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Can't start a game you didn't create"))
+func (s *GameActionsService) Kill(gameId int, killerUserId string, killCode string) apierrors.StatusError {
+	game, err := s.gameRepo.GetById(gameId)
+	if err != nil {
+		return err
 	}
 
+	err = s.validateGameState(game, models.RUNNING)
+	if err != nil {
+		return err
+	}
+
+	/* Stored procedures are the only option for these kinds of transactions */
+	errMsg := s.client.Rpc("kill_player", "", gin.H{
+		"p_game_id":   gameId,
+		"p_killer_id": killerUserId,
+		"p_kill_code": killCode,
+	})
+
+	if errMsg != "" {
+		return apierrors.NewStatusError(
+			http.StatusInternalServerError,
+			errors.New(errMsg),
+		)
+	}
+	return nil
+}
+
+/* TODO: This validate game bs is kinda ugly */
+func (s *GameActionsService) getValidatedGame(gameId int, callerUserId string, state models.GameState) (*models.Game, apierrors.StatusError) {
+	game, err := s.gameRepo.GetById(gameId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.validateCreator(game, callerUserId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.validateGameState(game, state)
+	if err != nil {
+		return nil, err
+	}
+
+	return game, nil
+}
+
+func (s *GameActionsService) validateGame(gameId int, callerUserId string, state models.GameState) apierrors.StatusError {
+	_, err := s.getValidatedGame(gameId, callerUserId, state)
+	return err
+}
+
+func (s *GameActionsService) validateCreator(game *models.Game, callerUserId string) apierrors.StatusError {
+	if game.CreatedBy != callerUserId {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Can't modify a game you didn't create"))
+	}
+
+	return nil
+}
+
+func (s *GameActionsService) validateGameState(game *models.Game, state models.GameState) apierrors.StatusError {
 	if game.State != state {
 		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Game already started"))
 	}
