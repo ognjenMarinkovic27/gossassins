@@ -9,8 +9,8 @@ const (
 )
 
 type Game struct {
-	Id        *int      `json:"id,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	CreatedBy string    `json:"created_by,omitempty"`
-	State     GameState `json:"state,omitempty"`
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedBy string    `json:"created_by"`
+	State     GameState `json:"state"`
 }

@@ -17,7 +17,7 @@ func IsValidApprovalStatus(value string) bool {
 }
 
 type GameApproval struct {
-	GameId int            `json:"game_id,omitempty"`
-	UserId string         `json:"user_id,omitempty"`
-	Status ApprovalStatus `json:"status,omitempty"`
+	GameId int            `json:"game_id"`
+	UserId string         `json:"user_id"`
+	Status ApprovalStatus `json:"status"`
 }
