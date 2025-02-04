@@ -32,6 +32,22 @@ func (r *GamePlayerRepo) GetAllByGameId(gameId int) ([]models.GamePlayer, apierr
 	return players, nil
 }
 
+func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId int) (*models.GamePlayer, apierrors.StatusError) {
+	var players []models.GamePlayer
+	query := r.db.
+		From("game_players").
+		Select("*", "exact", false).
+		Eq("game_id", strconv.Itoa(gameId)).
+		Eq("user_id", strconv.Itoa(gameId))
+
+	_, err := execeuteSelect(query, &players)
+	if err != nil {
+		return nil, apierrors.NewStatusError(http.StatusInternalServerError, err)
+	}
+
+	return &players[0], nil
+}
+
 func (r *GamePlayerRepo) Create(game *models.GamePlayer) apierrors.StatusError {
 	_, _, err := r.db.
 		From("game_players").

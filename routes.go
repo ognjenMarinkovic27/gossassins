@@ -72,9 +72,9 @@ func registerGameActionRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRe
 func registerGamePlayerRoutes(r *gin.Engine, client *supabase.Client) {
 	playerRepo := repos.NewGamePlayerRepo(client)
 	playerHandler := handlers.NewGamePlayerHandler(client, playerRepo)
-	playerGroup := r.Group("/game-player/:game_id")
+	playerGroup := r.Group("/game-players/:game_id")
 	{
 		playerGroup.GET("/", playerHandler.GetAllByGameId)
-		playerGroup.DELETE("/:player_id", playerHandler.Delete)
+		playerGroup.GET("/:user_id", playerHandler.GetByGameIdUserId)
 	}
 }

@@ -22,6 +22,7 @@ func NewGamePlayerHandler(db *supabase.Client, repo GamePlayerRepo) *GamePlayerH
 
 type GamePlayerRepo interface {
 	GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError)
+	GetByGameIdUserId(gameId int, userId int) (*models.GamePlayer, apierrors.StatusError)
 	Create(player *models.GamePlayer) apierrors.StatusError
 	Delete(gameId int, userId string) apierrors.StatusError
 }
@@ -29,6 +30,18 @@ type GamePlayerRepo interface {
 func (h *GamePlayerHandler) GetAllByGameId(context *gin.Context) {
 	gameId, _ := strconv.Atoi(context.Param("game_id"))
 	players, err := h.gamePlayerRepo.GetAllByGameId(gameId)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	context.JSON(http.StatusOK, players)
+}
+
+func (h *GamePlayerHandler) GetByGameIdUserId(context *gin.Context) {
+	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	userId, _ := strconv.Atoi(context.Param("user_id"))
+	players, err := h.gamePlayerRepo.GetByGameIdUserId(gameId, userId)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return
