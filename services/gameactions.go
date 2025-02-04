@@ -16,10 +16,14 @@ type GameActionsService struct {
 	client   *supabase.Client
 }
 
-func (s *GameActionsService) Start(gameId int) apierrors.StatusError {
+func (s *GameActionsService) Start(callerUserId string, gameId int) apierrors.StatusError {
 	game, err := s.gameRepo.GetById(gameId)
 	if err != nil {
 		return err
+	}
+
+	if game.CreatedBy != callerUserId {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("Can't start a game you didn't create"))
 	}
 
 	if game.State == "STARTED" {
