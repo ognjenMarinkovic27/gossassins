@@ -32,7 +32,7 @@ func (r *GamePlayerRepo) GetAllByGameId(gameId int) ([]models.GamePlayer, apierr
 	return players, nil
 }
 
-func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId int) (*models.GamePlayer, apierrors.StatusError) {
+func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId string) (*models.GamePlayer, apierrors.StatusError) {
 	var players []models.GamePlayer
 	query := r.db.
 		From("game_players").
