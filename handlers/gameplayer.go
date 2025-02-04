@@ -41,6 +41,7 @@ func (h *GamePlayerHandler) Create(context *gin.Context) {
 	var request dto.CreateGamePlayerRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	gameId, _ := strconv.Atoi(context.Param("game_id"))

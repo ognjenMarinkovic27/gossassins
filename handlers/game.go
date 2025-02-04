@@ -52,6 +52,7 @@ func (h *GameHandler) Create(context *gin.Context) {
 	var request dto.CreateGameRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	game := models.Game{
@@ -74,6 +75,7 @@ func (h *GameHandler) Patch(context *gin.Context) {
 	var request dto.PatchGameRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	if request.Name == nil {

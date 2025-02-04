@@ -40,6 +40,7 @@ func (h *GameApprovalHandler) Create(context *gin.Context) {
 	var request dto.CreateGameApprovalRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	if request.UserId == nil {
@@ -70,6 +71,7 @@ func (h *GameApprovalHandler) Patch(context *gin.Context) {
 	var request dto.PatchGameApprovalRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	err := validateRequest(request)
