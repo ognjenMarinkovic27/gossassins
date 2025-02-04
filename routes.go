@@ -3,6 +3,7 @@ package main
 import (
 	"mognjen/gossassins/handlers"
 	"mognjen/gossassins/repos"
+	"mognjen/gossassins/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/supabase-community/supabase-go"
@@ -40,14 +41,38 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 		gameGroup.PATCH("/:id", gameHandler.Patch)
 		gameGroup.DELETE("/:id", gameHandler.Delete)
 
-		approvalRepo := repos.NewGameApprovalRepo(client)
-		approvalHandler := handlers.NewGameApprovalHandler(approvalRepo)
-		approvalGroup := gameGroup.Group("/approvals/:game_id")
-		{
-			approvalGroup.GET("/", approvalHandler.GetAllByGameId)
-			approvalGroup.POST("/", approvalHandler.Create)
-			approvalGroup.PATCH("/:user_id", approvalHandler.Patch)
-		}
+		registerGameApprovalRoutes(gameGroup, client)
+		registerGameActionRoutes(gameGroup, gameRepo, client)
+	}
+}
+
+func registerGameApprovalRoutes(gameGroup *gin.RouterGroup, client *supabase.Client) {
+	approvalRepo := repos.NewGameApprovalRepo(client)
+	approvalHandler := handlers.NewGameApprovalHandler(approvalRepo)
+	approvalGroup := gameGroup.Group("/approvals/:game_id")
+	{
+		approvalGroup.GET("/", approvalHandler.GetAllByGameId)
+		approvalGroup.POST("/", approvalHandler.Create)
+		approvalGroup.PATCH("/:user_id", approvalHandler.Patch)
+	}
+}
+
+func registerGameActionRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRepo, client *supabase.Client) {
+	actionService := services.NewGameActionService(gameRepo, client)
+	actionHandler := handlers.NewGameActionHandler(actionService)
+	actionGroup := gameGroup.Group("/actions")
+	{
+		actionGroup.POST("/start", actionHandler.Start)
+
+		/*
+		   TODO: this could be a REST style approval resource
+		   and current approvals could be renamed to approval
+		   requests
+		*/
+		actionGroup.POST("/approve", actionHandler.Approve)
+		actionGroup.POST("/unapprove", actionHandler.Unapprove)
+
+		actionGroup.POST("/kill", actionHandler.Kill)
 	}
 }
 
