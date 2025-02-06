@@ -116,7 +116,7 @@ func validateGamePlayerPatchRequest(patch dto.PatchGamePlayerRequest) apierrors.
 	if patch.Status == nil {
 		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("missing status"))
 	} else if !isValidGamePlayerPatchStatus(*patch.Status) {
-		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("invalid status value, status can only be patched to ALIVE, NOT_APPROVED"))
+		return apierrors.NewStatusError(http.StatusUnprocessableEntity, errors.New("invalid status value, status can only be patched to ALIVE, NOT_APPROVED"))
 	}
 
 	return nil
