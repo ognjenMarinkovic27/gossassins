@@ -41,22 +41,8 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 		gameGroup.PATCH("/:id", gameHandler.Patch)
 		gameGroup.DELETE("/:id", gameHandler.Delete)
 
-		registerJoinRequestRoutes(gameGroup, gameRepo, client)
 		registerGameActionRoutes(gameGroup, gameRepo, client)
 		registerGamePlayerRoutes(gameGroup, client)
-	}
-}
-
-func registerJoinRequestRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRepo, client *supabase.Client) {
-	joinRequestRepo := repos.NewJoinRequestRepo(client)
-	joinRequestService := services.NewJoinRequestService(gameRepo, joinRequestRepo, client)
-	joinRequestHandler := handlers.NewJoinRequestHandler(joinRequestService)
-	joinRequestGroup := gameGroup.Group("/join-requests/:game_id")
-	{
-		joinRequestGroup.GET("/", joinRequestHandler.GetAllByGameId)
-		joinRequestGroup.POST("/", joinRequestHandler.Create)
-		joinRequestGroup.POST("/:user_id/approval", joinRequestHandler.Approve)
-		joinRequestGroup.DELETE("/:user_id/approval", joinRequestHandler.Unapprove)
 	}
 }
 
@@ -76,6 +62,8 @@ func registerGamePlayerRoutes(gameGroup *gin.RouterGroup, client *supabase.Clien
 	playerGroup := gameGroup.Group("/players/:game_id")
 	{
 		playerGroup.GET("/", playerHandler.GetAllByGameId)
+		playerGroup.POST("/", playerHandler.Create)
 		playerGroup.GET("/:user_id", playerHandler.GetByGameIdUserId)
+		playerGroup.PATCH("/:user_id", playerHandler.Patch)
 	}
 }

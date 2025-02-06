@@ -48,10 +48,25 @@ func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId string) (*models.G
 	return &players[0], nil
 }
 
-func (r *GamePlayerRepo) Create(game *models.GamePlayer) apierrors.StatusError {
+func (r *GamePlayerRepo) Create(gamePlayer *models.GamePlayer) apierrors.StatusError {
 	_, _, err := r.db.
 		From("game_players").
-		Insert(game, false, "", "", "").
+		Insert(gamePlayer, false, "", "", "").
+		Execute()
+
+	if err != nil {
+		return apierrors.NewStatusError(http.StatusInternalServerError, err)
+	}
+
+	return nil
+}
+
+func (r *GamePlayerRepo) Patch(gameId int, userId string, patch *models.GamePlayer) apierrors.StatusError {
+	_, _, err := r.db.
+		From("game_players").
+		Update(patch, "", "").
+		Eq("game_id", strconv.Itoa(gameId)).
+		Eq("user_id", userId).
 		Execute()
 
 	if err != nil {

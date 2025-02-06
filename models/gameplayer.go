@@ -3,8 +3,9 @@ package models
 type PlayerStatus string
 
 const (
-	DEAD  PlayerStatus = "DEAD"
-	ALIVE PlayerStatus = "ALIVE"
+	NOT_APPROVED PlayerStatus = "NOT_APPROVED"
+	ALIVE        PlayerStatus = "ALIVE"
+	DEAD         PlayerStatus = "DEAD"
 )
 
 type GamePlayer struct {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"mognjen/gossassins/apierrors"
 	"mognjen/gossassins/dto"
 	"mognjen/gossassins/models"
@@ -24,6 +25,7 @@ type GamePlayerRepo interface {
 	GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError)
 	GetByGameIdUserId(gameId int, userId string) (*models.GamePlayer, apierrors.StatusError)
 	Create(player *models.GamePlayer) apierrors.StatusError
+	Patch(gameId int, suerId string, player *models.GamePlayer) apierrors.StatusError
 	Delete(gameId int, userId string) apierrors.StatusError
 }
 
@@ -69,7 +71,7 @@ func (h *GamePlayerHandler) Create(context *gin.Context) {
 		UserId:   *request.UserId,
 		KillCode: nil,
 		TargetId: nil,
-		Status:   models.ALIVE,
+		Status:   models.NOT_APPROVED,
 	}
 
 	err := h.gamePlayerRepo.Create(&player)
@@ -79,6 +81,55 @@ func (h *GamePlayerHandler) Create(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusCreated, "")
+}
+
+func (h *GamePlayerHandler) Patch(context *gin.Context) {
+	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	userId := context.Param("user_id")
+	var request dto.PatchGamePlayerRequest
+	if err := context.BindJSON(&request); err != nil {
+		context.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	err := validateGamePlayerPatchRequest(request)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	patch := models.GamePlayer{
+		GameId: gameId,
+		UserId: userId,
+		Status: models.PlayerStatus(*request.Status),
+	}
+
+	err = h.gamePlayerRepo.Patch(gameId, userId, &patch)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	context.JSON(http.StatusOK, "")
+}
+
+func validateGamePlayerPatchRequest(patch dto.PatchGamePlayerRequest) apierrors.StatusError {
+	if patch.Status == nil {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("missing status"))
+	} else if !isValidGamePlayerPatchStatus(*patch.Status) {
+		return apierrors.NewStatusError(http.StatusBadRequest, errors.New("invalid status value, status can only be patched to ALIVE, NOT_APPROVED"))
+	}
+
+	return nil
+}
+
+func isValidGamePlayerPatchStatus(value string) bool {
+	switch models.PlayerStatus(value) {
+	case models.ALIVE, models.NOT_APPROVED:
+		return true
+	default:
+		return false
+	}
 }
 
 func (h *GamePlayerHandler) Delete(context *gin.Context) {
