@@ -1,6 +1,7 @@
 package repos
 
 import (
+	"errors"
 	"mognjen/gossassins/apierrors"
 	"mognjen/gossassins/models"
 	"net/http"
@@ -40,9 +41,13 @@ func (r *GamePlayerRepo) GetByGameIdUserId(gameId int, userId string) (*models.G
 		Eq("game_id", strconv.Itoa(gameId)).
 		Eq("user_id", userId)
 
-	_, err := execeuteSelect(query, &players)
+	count, err := execeuteSelect(query, &players)
 	if err != nil {
 		return nil, apierrors.NewStatusError(http.StatusInternalServerError, err)
+	}
+
+	if count == 0 {
+		return nil, apierrors.NewStatusError(http.StatusNotFound, errors.New("GamePlayer not found"))
 	}
 
 	return &players[0], nil
