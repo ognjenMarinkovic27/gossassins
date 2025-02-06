@@ -65,7 +65,7 @@ func (r *GameRepo) Create(game *models.Game) apierrors.StatusError {
 	return nil
 }
 
-func (r *GameRepo) Patch(id int, patch *models.Game) apierrors.StatusError {
+func (r *GameRepo) Patch(id int, patch *models.GamePatch) apierrors.StatusError {
 	_, _, err := r.db.
 		From("games").
 		Update(patch, "", "").

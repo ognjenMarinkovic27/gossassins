@@ -23,46 +23,18 @@ func NewGameActionService(gameRepo *repos.GameRepo, db *supabase.Client) *GameAc
 
 func (s *GameActionService) Start(gameId int) apierrors.StatusError {
 	game, err := helpers.GetValidatedGame(s.gameRepo, gameId, models.OPEN)
-
-	err = s.assignTargets(game)
 	if err != nil {
 		return err
 	}
 
-	err = s.setGameStatusToRunning(err, gameId, game)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *GameActionService) setGameStatusToRunning(err apierrors.StatusError, gameId int, game *models.Game) apierrors.StatusError {
-	err = s.gameRepo.Patch(gameId, &models.Game{
-		Id:        game.Id,
-		Name:      game.Name,
-		CreatedBy: game.CreatedBy,
-		State:     models.RUNNING,
-	})
-
-	if err != nil {
-		return apierrors.NewStatusError(
-			http.StatusInternalServerError,
-			err,
-		)
-	}
-	return nil
-}
-
-func (s *GameActionService) assignTargets(game *models.Game) apierrors.StatusError {
-	/* Stored procedures are the only option for these kinds of transactions */
-	errMsg := s.db.Rpc("assign_kill_codes_and_targets", "", gin.H{"p_game_id": game.Id})
+	errMsg := s.db.Rpc("start_game", "", gin.H{"p_game_id": game.Id})
 	if errMsg != "" {
 		return apierrors.NewStatusError(
 			http.StatusInternalServerError,
 			errors.New(errMsg),
 		)
 	}
+
 	return nil
 }
 

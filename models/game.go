@@ -14,3 +14,7 @@ type Game struct {
 	CreatedBy string    `json:"created_by"`
 	State     GameState `json:"state"`
 }
+
+type GamePatch struct {
+	Name *string `json:"name,omitempty"`
+}

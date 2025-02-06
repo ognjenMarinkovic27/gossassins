@@ -25,7 +25,7 @@ type GamePlayerRepo interface {
 	GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError)
 	GetByGameIdUserId(gameId int, userId string) (*models.GamePlayer, apierrors.StatusError)
 	Create(player *models.GamePlayer) apierrors.StatusError
-	Patch(gameId int, suerId string, player *models.GamePlayer) apierrors.StatusError
+	Patch(gameId int, suerId string, player *models.GamePlayerPatch) apierrors.StatusError
 	Delete(gameId int, userId string) apierrors.StatusError
 }
 
@@ -98,10 +98,9 @@ func (h *GamePlayerHandler) Patch(context *gin.Context) {
 		return
 	}
 
-	patch := models.GamePlayer{
-		GameId: gameId,
-		UserId: userId,
-		Status: models.PlayerStatus(*request.Status),
+	newStatus := models.PlayerStatus(*request.Status)
+	patch := models.GamePlayerPatch{
+		Status: &newStatus,
 	}
 
 	err = h.gamePlayerRepo.Patch(gameId, userId, &patch)

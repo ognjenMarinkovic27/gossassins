@@ -15,3 +15,7 @@ type GamePlayer struct {
 	TargetId *int         `json:"target_id"`
 	Status   PlayerStatus `json:"status"`
 }
+
+type GamePlayerPatch struct {
+	Status *PlayerStatus `json:"status,omitempty"`
+}

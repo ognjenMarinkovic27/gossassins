@@ -19,7 +19,7 @@ type GameRepo interface {
 	GetAll(ctx context.Context) ([]models.Game, apierrors.StatusError)
 	GetById(id int) (*models.Game, apierrors.StatusError)
 	Create(game *models.Game) apierrors.StatusError
-	Patch(id int, patch *models.Game) apierrors.StatusError
+	Patch(id int, patch *models.GamePatch) apierrors.StatusError
 	Delete(id int) apierrors.StatusError
 }
 
@@ -93,8 +93,8 @@ func (h *GameHandler) Patch(context *gin.Context) {
 }
 
 func (h *GameHandler) patchGame(request dto.PatchGameRequest, id int) apierrors.StatusError {
-	patch := models.Game{
-		Name: *request.Name,
+	patch := models.GamePatch{
+		Name: request.Name,
 	}
 
 	err := h.gameRepo.Patch(id, &patch)

@@ -1,4 +1,4 @@
-create or replace function assign_kill_codes_and_targets(p_game_id bigint)
+create or replace function start_game(p_game_id bigint)
 returns void as $$
 declare
     player_ids uuid[];
@@ -25,5 +25,10 @@ begin
             target_id = shuffled_ids[(i % array_length(shuffled_ids, 1)) + 1]
         where game_id = p_game_id and user_id = shuffled_ids[i];
     end loop;
+
+    -- Update game status to RUNNING
+    update games
+    set status = 'RUNNING'
+    where id = p_game_id;
 end;
 $$ language plpgsql;
