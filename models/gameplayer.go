@@ -12,7 +12,7 @@ type GamePlayer struct {
 	GameId   int          `json:"game_id"`
 	UserId   string       `json:"user_id"`
 	KillCode *string      `json:"kill_code"`
-	TargetId *int         `json:"target_id"`
+	TargetId *string      `json:"target_id"`
 	Status   PlayerStatus `json:"status"`
 }
 
