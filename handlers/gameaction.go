@@ -35,7 +35,7 @@ func (h *GameActionHandler) Start(context *gin.Context) {
 
 	err := h.gameActionService.Start(*request.GameId)
 	if err != nil {
-		context.AbortWithStatusJSON(err.Status(), err)
+		context.AbortWithError(err.Status(), err)
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *GameActionHandler) Kill(context *gin.Context) {
 
 	err := h.gameActionService.Kill(*request.GameId, *request.KillerUserId, *request.KillCode)
 	if err != nil {
-		context.AbortWithStatusJSON(err.Status(), err)
+		context.AbortWithError(err.Status(), err)
 		return
 	}
 
