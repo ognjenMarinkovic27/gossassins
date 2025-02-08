@@ -28,7 +28,7 @@ begin
 
     -- Update game status to RUNNING
     update games
-    set status = 'RUNNING'
+    set state = 'RUNNING'
     where id = p_game_id;
 end;
 $$ language plpgsql;
