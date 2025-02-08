@@ -2,10 +2,11 @@ create or replace function kill_player(p_game_id bigint, p_killer_id uuid, p_kil
 returns void as $$
 declare
     v_target_id uuid;
+    v_kill_code text;
     v_new_target_id uuid;
 begin
     -- Find the killer's target and check the kill code
-    select target_id into v_target_id
+    select target_id, kill_code into v_target_id, v_kill_code
     from game_players
     where game_id = p_game_id and user_id = p_killer_id
     for update;
@@ -15,11 +16,7 @@ begin
     end if;
     
     -- Verify the kill code matches
-    if not exists (
-        select 1 from game_players
-        where game_id = p_game_id and user_id = v_target_id and kill_code = p_kill_code
-        for update
-    ) then
+    if p_kill_code != v_kill_code then
         raise exception 'Invalid kill code';
     end if;
     
