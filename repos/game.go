@@ -52,7 +52,7 @@ func (r *GameRepo) GetById(id int) (*models.Game, apierrors.StatusError) {
 	return &games[0], nil
 }
 
-func (r *GameRepo) Create(game *models.Game) apierrors.StatusError {
+func (r *GameRepo) Create(game *models.GameCreation) apierrors.StatusError {
 	_, _, err := r.db.
 		From("games").
 		Insert(game, false, "", "", "").

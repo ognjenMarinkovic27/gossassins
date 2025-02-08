@@ -28,11 +28,6 @@ func (h *GameActionHandler) Start(context *gin.Context) {
 		return
 	}
 
-	if request.CallerUserId == nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing user_id"})
-		return
-	}
-
 	err := h.gameActionService.Start(*request.GameId)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
@@ -54,17 +49,14 @@ func (h *GameActionHandler) Kill(context *gin.Context) {
 		return
 	}
 
-	if request.KillerUserId == nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing killer_id"})
-		return
-	}
-
 	if request.KillCode == nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing kill_code"})
 		return
 	}
 
-	err := h.gameActionService.Kill(*request.GameId, *request.KillerUserId, *request.KillCode)
+	killerId := context.GetString("userId")
+
+	err := h.gameActionService.Kill(*request.GameId, killerId, *request.KillCode)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
 		return

@@ -18,7 +18,7 @@ type GameHandler struct {
 type GameRepo interface {
 	GetAll(ctx context.Context) ([]models.Game, apierrors.StatusError)
 	GetById(id int) (*models.Game, apierrors.StatusError)
-	Create(game *models.Game) apierrors.StatusError
+	Create(game *models.GameCreation) apierrors.StatusError
 	Patch(id int, patch *models.GamePatch) apierrors.StatusError
 	Delete(id int) apierrors.StatusError
 }
@@ -55,9 +55,11 @@ func (h *GameHandler) Create(context *gin.Context) {
 		return
 	}
 
-	game := models.Game{
+	userId := context.GetString("userId")
+
+	game := models.GameCreation{
 		Name:      request.Name,
-		CreatedBy: request.CreatedBy,
+		CreatedBy: userId,
 		State:     models.OPEN,
 	}
 

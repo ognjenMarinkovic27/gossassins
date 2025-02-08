@@ -1,8 +1,7 @@
 package dto
 
 type CreateGameRequest struct {
-	Name      string `json:"name,omitempty"`
-	CreatedBy string `json:"created_by,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type PatchGameRequest struct {

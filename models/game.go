@@ -15,6 +15,12 @@ type Game struct {
 	State     GameState `json:"state"`
 }
 
+type GameCreation struct {
+	Name      string    `json:"name"`
+	CreatedBy string    `json:"created_by"`
+	State     GameState `json:"state"`
+}
+
 type GamePatch struct {
 	Name *string `json:"name,omitempty"`
 }

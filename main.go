@@ -16,7 +16,13 @@ func main() {
 		return
 	}
 
-	registerRoutes(r, client)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		fmt.Println("jwt secret is empty")
+		return
+	}
+
+	registerRoutes(r, client, jwtSecret)
 
 	r.Run()
 }
