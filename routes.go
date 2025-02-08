@@ -27,7 +27,7 @@ func registerAuthRoutes(r *gin.Engine, client *supabase.Client, userRepo handler
 
 func registerUserRoutes(r *gin.Engine, userRepo handlers.UserRepo) {
 	userHandler := handlers.NewUserHandler(userRepo)
-	r.GET("/users/:id", userHandler.GetById)
+	r.GET("/users/:user_id", userHandler.GetById)
 }
 
 func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
@@ -36,10 +36,10 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 	gameGroup := r.Group("/games")
 	{
 		gameGroup.GET("/", gameHandler.GetAll)
-		gameGroup.GET("/:id", gameHandler.GetById)
+		gameGroup.GET("/:game_id", gameHandler.GetById)
 		gameGroup.POST("/", gameHandler.Create)
-		gameGroup.PATCH("/:id", gameHandler.Patch)
-		gameGroup.DELETE("/:id", gameHandler.Delete)
+		gameGroup.PATCH("/:game_id", gameHandler.Patch)
+		gameGroup.DELETE("/:game_id", gameHandler.Delete)
 
 		registerGameActionRoutes(gameGroup, gameRepo, client)
 		registerGamePlayerRoutes(gameGroup, client)

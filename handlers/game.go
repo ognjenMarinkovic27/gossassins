@@ -38,7 +38,7 @@ func (h *GameHandler) GetAll(context *gin.Context) {
 }
 
 func (h *GameHandler) GetById(context *gin.Context) {
-	id, _ := strconv.Atoi(context.Param("id"))
+	id, _ := strconv.Atoi(context.Param("game_id"))
 	games, err := h.gameRepo.GetById(id)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
@@ -71,7 +71,7 @@ func (h *GameHandler) Create(context *gin.Context) {
 }
 
 func (h *GameHandler) Patch(context *gin.Context) {
-	id, _ := strconv.Atoi(context.Param("id"))
+	id, _ := strconv.Atoi(context.Param("game_id"))
 	var request dto.PatchGameRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.AbortWithError(http.StatusInternalServerError, err)
@@ -105,7 +105,7 @@ func (h *GameHandler) patchGame(request dto.PatchGameRequest, id int) apierrors.
 }
 
 func (h *GameHandler) Delete(context *gin.Context) {
-	id, _ := strconv.Atoi(context.Param("id"))
+	id, _ := strconv.Atoi(context.Param("game_id"))
 	err := h.gameRepo.Delete(id)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)

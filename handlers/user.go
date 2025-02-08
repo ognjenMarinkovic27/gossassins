@@ -21,7 +21,7 @@ func NewUserHandler(repo UserRepo) *UserHandler {
 }
 
 func (h *UserHandler) GetById(context *gin.Context) {
-	id := context.Param("id")
+	id := context.Param("user_id")
 	user, err := h.userRepo.GetById(id)
 
 	if err != nil {
