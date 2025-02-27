@@ -1,34 +1,46 @@
-create or replace function start_game(p_game_id bigint)
+create or replace function kill_player(p_game_id uuid, p_killer_id uuid, p_kill_code text)
 returns void as $$
 declare
-    player_ids uuid[];
-    shuffled_ids uuid[];
-    i int;
+    v_target_id uuid;
+    v_kill_code text;
+    v_new_target_id uuid;
 begin
-    -- Fetch all player user_ids for the given game_id
-    select array_agg(user_id) into player_ids
+    -- Find the killer's target and check the kill code
+    select target_id into v_target_id
     from game_players
-    where game_id = p_game_id;
+    where game_id = p_game_id and user_id = p_killer_id
+    for update;
     
-    if array_length(player_ids, 1) is null or array_length(player_ids, 1) < 2 then
-        raise exception 'Not enough players to form a cycle';
+    if v_target_id is null then
+        raise exception 'NO_TARGET';
+    end if;
+
+    -- Get the target's target and kill code
+    select target_id, kill_code into v_new_target_id, v_kill_code
+    from game_players
+    where game_id = p_game_id and user_id = v_target_id;
+    
+    -- Verify the kill code matches
+    if p_kill_code != v_kill_code then
+        raise exception 'INVALID_CODE';
     end if;
     
-    -- Shuffle the array to randomize target assignment
-    select array_agg(user_id order by random()) into shuffled_ids
-    from unnest(player_ids) as user_id;
-    
-    -- Assign kill codes and targets in a cycle
-    for i in 1..array_length(shuffled_ids, 1) loop
-        update game_players
-        set kill_code = upper(substr(md5(random()::text), 1, 7)),
-            target_id = shuffled_ids[(i % array_length(shuffled_ids, 1)) + 1]
-        where game_id = p_game_id and user_id = shuffled_ids[i];
-    end loop;
+    -- Mark the target as DEAD
+    update game_players
+    set status = 'DEAD', target_id = null
+    where game_id = p_game_id and user_id = v_target_id;
 
-    -- Update game status to RUNNING
-    update games
-    set state = 'RUNNING'
-    where id = p_game_id;
+    if v_new_target_id = p_killer_id then
+        update games
+        set state = 'DONE'
+        where id = p_game_id;
+    end if;
+    
+    -- Assign the new target to the killer, only if the target had a next target
+    if v_new_target_id is not null then
+        update game_players
+        set target_id = v_new_target_id
+        where game_id = p_game_id and user_id = p_killer_id;
+    end if;
 end;
 $$ language plpgsql;

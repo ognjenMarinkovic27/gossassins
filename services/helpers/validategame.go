@@ -9,7 +9,7 @@ import (
 )
 
 /* TODO: This validate game bs is kinda ugly */
-func GetValidatedGame(gameRepo *repos.GameRepo, gameId int, state models.GameState) (*models.Game, apierrors.StatusError) {
+func GetValidatedGame(gameRepo *repos.GameRepo, gameId string, state models.GameState) (*models.Game, apierrors.StatusError) {
 	game, err := gameRepo.GetById(gameId)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func ValidateGameState(game *models.Game, state models.GameState) apierrors.Stat
 	return nil
 }
 
-func ValidateGame(gameRepo *repos.GameRepo, gameId int, state models.GameState) apierrors.StatusError {
+func ValidateGame(gameRepo *repos.GameRepo, gameId string, state models.GameState) apierrors.StatusError {
 	_, err := GetValidatedGame(gameRepo, gameId, state)
 	return err
 }

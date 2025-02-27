@@ -22,7 +22,7 @@ func (r *UserRepo) GetById(id string) (*models.User, apierrors.StatusError) {
 	query := r.db.
 		From("users").
 		Select("*", "exact", false).
-		Eq("id", id)
+		Eq("uid", id)
 
 	count, err := execeuteSelect(query, &users)
 

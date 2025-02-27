@@ -6,7 +6,6 @@ import (
 	"mognjen/gossassins/dto"
 	"mognjen/gossassins/models"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/supabase-community/supabase-go"
@@ -22,15 +21,15 @@ func NewGamePlayerHandler(db *supabase.Client, repo GamePlayerRepo) *GamePlayerH
 }
 
 type GamePlayerRepo interface {
-	GetAllByGameId(gameId int) ([]models.GamePlayer, apierrors.StatusError)
-	GetByGameIdUserId(gameId int, userId string) (*models.GamePlayer, apierrors.StatusError)
+	GetAllByGameId(gameId string) ([]models.GamePlayer, apierrors.StatusError)
+	GetByGameIdUserId(gameId string, userId string) (*models.GamePlayer, apierrors.StatusError)
 	Create(player *models.GamePlayer) apierrors.StatusError
-	Patch(gameId int, suerId string, player *models.GamePlayerPatch) apierrors.StatusError
-	Delete(gameId int, userId string) apierrors.StatusError
+	Patch(gameId string, suerId string, player *models.GamePlayerPatch) apierrors.StatusError
+	Delete(gameId string, userId string) apierrors.StatusError
 }
 
 func (h *GamePlayerHandler) GetAllByGameId(context *gin.Context) {
-	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	gameId := context.Param("game_id")
 	players, err := h.gamePlayerRepo.GetAllByGameId(gameId)
 	if err != nil {
 		context.AbortWithError(err.Status(), err)
@@ -41,7 +40,7 @@ func (h *GamePlayerHandler) GetAllByGameId(context *gin.Context) {
 }
 
 func (h *GamePlayerHandler) GetByGameIdUserId(context *gin.Context) {
-	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	gameId := context.Param("game_id")
 	userId := context.Param("user_id")
 	players, err := h.gamePlayerRepo.GetByGameIdUserId(gameId, userId)
 	if err != nil {
@@ -52,23 +51,25 @@ func (h *GamePlayerHandler) GetByGameIdUserId(context *gin.Context) {
 	context.JSON(http.StatusOK, players)
 }
 
+func (h *GamePlayerHandler) GetMe(context *gin.Context) {
+	gameId := context.Param("game_id")
+	userId := context.GetString("userId")
+	players, err := h.gamePlayerRepo.GetByGameIdUserId(gameId, userId)
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	context.JSON(http.StatusOK, players)
+}
+
 func (h *GamePlayerHandler) Create(context *gin.Context) {
-	var request dto.CreateGamePlayerRequest
-	if err := context.BindJSON(&request); err != nil {
-		context.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	gameId, _ := strconv.Atoi(context.Param("game_id"))
-
-	if request.UserId == nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "missing user_id"})
-		return
-	}
+	gameId := context.Param("game_id")
+	userId := context.GetString("userId")
 
 	player := models.GamePlayer{
 		GameId:   gameId,
-		UserId:   *request.UserId,
+		UserId:   userId,
 		KillCode: nil,
 		TargetId: nil,
 		Status:   models.NOT_APPROVED,
@@ -84,7 +85,7 @@ func (h *GamePlayerHandler) Create(context *gin.Context) {
 }
 
 func (h *GamePlayerHandler) Patch(context *gin.Context) {
-	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	gameId := context.Param("game_id")
 	userId := context.Param("user_id")
 	var request dto.PatchGamePlayerRequest
 	if err := context.BindJSON(&request); err != nil {
@@ -132,7 +133,7 @@ func isValidGamePlayerPatchStatus(value string) bool {
 }
 
 func (h *GamePlayerHandler) Delete(context *gin.Context) {
-	gameId, _ := strconv.Atoi(context.Param("game_id"))
+	gameId := context.Param("game_id")
 	userId := context.Param("user_id")
 	err := h.gamePlayerRepo.Delete(gameId, userId)
 	if err != nil {

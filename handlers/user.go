@@ -31,3 +31,15 @@ func (h *UserHandler) GetById(context *gin.Context) {
 
 	context.JSON(http.StatusOK, *user)
 }
+
+func (h *UserHandler) GetMe(context *gin.Context) {
+	id := context.GetString("userId")
+	user, err := h.userRepo.GetById(id)
+
+	if err != nil {
+		context.AbortWithError(err.Status(), err)
+		return
+	}
+
+	context.JSON(http.StatusOK, *user)
+}

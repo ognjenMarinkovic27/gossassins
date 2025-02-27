@@ -34,16 +34,21 @@ func registerUserRoutes(r *gin.Engine, userRepo handlers.UserRepo) {
 	userGroup := r.Group("/users")
 	{
 		userGroup.GET("/:user_id", userHandler.GetById)
+		userGroup.GET("/me", userHandler.GetMe)
 	}
 }
 
 func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 	gameRepo := repos.NewGameRepo(client)
-	gameHandler := handlers.NewGameHandler(gameRepo)
+	gamePlayerRepo := repos.NewGamePlayerRepo(client)
+	gameService := services.NewGameService(gameRepo, gamePlayerRepo)
+	gameHandler := handlers.NewGameHandler(gameService)
 	gameGroup := r.Group("/games")
 	{
-		gameGroup.GET("/", gameHandler.GetAll)
+		gameGroup.GET("/joined", gameHandler.GetAllJoined)
+		gameGroup.GET("/created", gameHandler.GetAllCreated)
 		gameGroup.GET("/:game_id", gameHandler.GetById)
+		gameGroup.GET("/code/:join_code", gameHandler.GetIdByJoinCode)
 		gameGroup.POST("/", gameHandler.Create)
 
 		ownerOnlyGroup := gameGroup.Group("/")
@@ -52,7 +57,7 @@ func registerGameRoutes(r *gin.Engine, client *supabase.Client) {
 		ownerOnlyGroup.DELETE("/:game_id", gameHandler.Delete)
 
 		registerGameActionRoutes(gameGroup, gameRepo, client)
-		registerGamePlayerRoutes(gameGroup, gameRepo, client)
+		registerGamePlayerRoutes(gameGroup, gameRepo, gamePlayerRepo, client)
 	}
 }
 
@@ -66,15 +71,19 @@ func registerGameActionRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRe
 	}
 }
 
-func registerGamePlayerRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRepo, client *supabase.Client) {
-	playerRepo := repos.NewGamePlayerRepo(client)
+func registerGamePlayerRoutes(gameGroup *gin.RouterGroup, gameRepo *repos.GameRepo, playerRepo *repos.GamePlayerRepo, client *supabase.Client) {
 	playerHandler := handlers.NewGamePlayerHandler(client, playerRepo)
 	playerGroup := gameGroup.Group("/players/:game_id")
-	playerGroup.Use(middleware.IsGameOwnerMiddleware(gameRepo))
 	{
-		playerGroup.GET("/", playerHandler.GetAllByGameId)
 		playerGroup.POST("/", playerHandler.Create)
-		playerGroup.GET("/:user_id", playerHandler.GetByGameIdUserId)
+		playerGroup.GET("/me", playerHandler.GetMe)
+
+		allowedOnHimself := playerGroup.Group("")
+		allowedOnHimself.Use(middleware.IsHimselfMiddleware())
+		allowedOnHimself.GET("/:user_id", playerHandler.GetByGameIdUserId)
+
+		playerGroup.Use(middleware.IsGameOwnerMiddleware(gameRepo))
+		playerGroup.GET("/", playerHandler.GetAllByGameId)
 		playerGroup.PATCH("/:user_id", playerHandler.Patch)
 	}
 }

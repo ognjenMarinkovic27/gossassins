@@ -9,7 +9,7 @@ const (
 )
 
 type GamePlayer struct {
-	GameId   int          `json:"game_id"`
+	GameId   string       `json:"game_id"`
 	UserId   string       `json:"user_id"`
 	KillCode *string      `json:"kill_code"`
 	TargetId *string      `json:"target_id"`
