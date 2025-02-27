@@ -8,7 +8,7 @@ begin
     -- Fetch all player user_ids for the given game_id
     select array_agg(user_id) into player_ids
     from game_players
-    where game_id = p_game_id and status = "ALIVE";
+    where game_id = p_game_id and status = 'ALIVE';
     
     if array_length(player_ids, 1) is null or array_length(player_ids, 1) < 2 then
         raise exception 'Not enough players to form a cycle';
